@@ -1,0 +1,8 @@
+run.log
+run.lst
+*.lst
+work/
+temp/
+.cas/
+.ipynb_checkpoints/
+demos/**/offshore_network.html

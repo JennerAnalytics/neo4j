@@ -1,0 +1,54 @@
+/* PROC NETVIZ showcase — render a network as an interactive Cytoscape.js
+   diagram, with no database required. A small offshore-ownership graph:
+   officers and intermediaries connected to entities, styled by role.
+
+   Run:  jenner demos/netviz_showcase/demo.jenner .
+   Output: demos/netviz_showcase/offshore_network.html (open in a browser).
+
+   PROC NETVIZ is a Jenner-native procedure; it also accepts a live graph via
+   CONN= (see the ICIJ notebook), but here it reads plain node/edge datasets so
+   the demo is fully self-contained. */
+
+/* Edges: who is linked to which offshore entity. */
+data work.edges;
+  length source $16 target $16 relation $12;
+  input source $ target $ relation $;
+  datalines;
+Officer_Alpha    Entity_Nimbus    officer_of
+Officer_Alpha    Entity_Vertex    officer_of
+Officer_Bravo    Entity_Nimbus    officer_of
+Interm_Zeta      Entity_Nimbus    registered
+Interm_Zeta      Entity_Cirrus    registered
+Officer_Charlie  Entity_Cirrus    officer_of
+Officer_Charlie  Entity_Vertex    officer_of
+Officer_Delta    Entity_Vertex    officer_of
+Interm_Yotta     Entity_Cirrus    registered
+Officer_Bravo    Entity_Cirrus    officer_of
+;
+run;
+
+/* Nodes: role drives colour, connection count drives size. */
+data work.nodes;
+  length id $16 role $12; input id $ role $ degree;
+  datalines;
+Officer_Alpha    officer       2
+Officer_Bravo    officer       2
+Officer_Charlie  officer       2
+Officer_Delta    officer       1
+Interm_Zeta      intermediary  2
+Interm_Yotta     intermediary  1
+Entity_Nimbus    entity        3
+Entity_Vertex    entity        3
+Entity_Cirrus    entity        4
+;
+run;
+
+/* Render the interactive network diagram. */
+proc netviz links=work.edges
+            nodes=work.nodes
+            file="demos/netviz_showcase/offshore_network.html"
+            layout=cose
+            directed=yes;
+  linksvar from=source to=target weight=relation;
+  nodesvar id=id label=id color=role size=degree;
+run;
